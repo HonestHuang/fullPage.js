@@ -1,5 +1,5 @@
 /**
- * fullPage 2.0.9
+ * fullPage 2.1.4
  * https://github.com/alvarotrigo/fullPage.js
  * MIT licensed
  *
@@ -12,7 +12,7 @@
 		options = $.extend({
 			"verticalCentered": true,
 			'resize': true,
-			'slidesColor' : [],
+			'sectionsColor' : [],
 			'anchors':[],
 			'scrollingSpeed': 700,
 			'easing': 'easeInQuart',
@@ -133,13 +133,14 @@
 		//flag to avoid very fast sliding for landscape sliders
 		var slideMoving = false;
 
-		var isTablet = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|Windows Phone|Tizen|Bada)/);
-		var container = $(this); // for compatibity reasons for fullpage < v2.0
+		var isTouchDevice = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|BB10|Windows Phone|Tizen|Bada)/);
+		var container = $(this);
 		var windowsHeight = $(window).height();
 		var isMoving = false;
 		var isResizing = false;
 		var lastScrolledDestiny;
 		var lastScrolledSlide;
+		var wrapperSelector = 'fullpage-wrapper';
 
 		$.fn.fullpage.setAllowScrolling(true);
 
@@ -154,12 +155,14 @@
 				'position': 'relative',
 				'-ms-touch-action': 'none'
 			});
+
+			//adding a class to recognize the container internally in the code
+			container.addClass(wrapperSelector);
 		}
 
-		//for compatibity reasons for fullpage < v2.0
+		//trying to use fullpage without a selector?
 		else{
-			$('body').wrapInner('<div id="superContainer" />');
-			container = $('#superContainer');
+			console.error("Error! Fullpage.js needs to be initialized with a selector. For example: $('#myContainer').fullpage();");
 		}
 
 		//creating the navigation dots
@@ -187,8 +190,8 @@
 				$(this).css('padding', options.paddingTop  + ' 0 ' + options.paddingBottom + ' 0');
 			}
 
-			if (typeof options.slidesColor[index] !==  'undefined') {
-				$(this).css('background-color', options.slidesColor[index]);
+			if (typeof options.sectionsColor[index] !==  'undefined') {
+				$(this).css('background-color', options.sectionsColor[index]);
 			}
 
 			if (typeof options.anchors[index] !== 'undefined') {
@@ -258,7 +261,6 @@
 		}).promise().done(function(){
 			$.fn.fullpage.setAutoScrolling(options.autoScrolling);
 
-
 			//the starting point is a slide?
 			var activeSlide = $('.section.active').find('.slide.active');
 			if( activeSlide.length &&  ($('.section.active').index('.section') != 0 || ($('.section.active').index('.section') == 0 && activeSlide.index() != 0))){
@@ -279,29 +281,17 @@
 				nav.find('li').eq($('.section.active').index('.section')).find('a').addClass('active');
 			}
 
-			//moving the menu outside the main container (avoid problems with fixed positions when using CSS3 tranforms)
-			if(options.menu && options.css3){
+			//moving the menu outside the main container if it is inside (avoid problems with fixed positions when using CSS3 tranforms)
+			if(options.menu && options.css3 && $(options.menu).closest('.fullpage-wrapper').length){
 				$(options.menu).appendTo('body');
 			}
 
 			if(options.scrollOverflow){
+				if(container.hasClass('fullpage-used')){
+					createSlimScrollingHandler();
+				}
 				//after DOM and images are loaded
-				$(window).on('load', function() {
-
-					$('.section').each(function(){
-						var slides = $(this).find('.slide');
-
-						if(slides.length){
-							slides.each(function(){
-								createSlimScrolling($(this));
-							});
-						}else{
-							createSlimScrolling($(this));
-						}
-
-					});
-					$.isFunction( options.afterRender ) && options.afterRender.call( this);
-				});
+				$(window).on('load', createSlimScrollingHandler);
 			}else{
 				$.isFunction( options.afterRender ) && options.afterRender.call( this);
 			}
@@ -330,12 +320,30 @@
 
 		});
 
+		function createSlimScrollingHandler(){
+			$('.section').each(function(){
+				var slides = $(this).find('.slide');
+
+				if(slides.length){
+					slides.each(function(){
+						createSlimScrolling($(this));
+					});
+				}else{
+					createSlimScrolling($(this));
+				}
+
+			});
+			$.isFunction( options.afterRender ) && options.afterRender.call( this);
+		}
+
+
 		var scrollId;
 		var isScrolling = false;
 
 		//when scrolling...
-		$(window).scroll(function(e){
+		$(window).on('scroll', scrollHandler);
 
+		function scrollHandler(){
 			if(!options.autoScrolling){
 				var currentScroll = $(window).scrollTop();
 
@@ -382,9 +390,7 @@
 				}
 
 			}
-		});
-
-
+		}
 
 
 		var touchStartY = 0;
@@ -506,7 +512,6 @@
 		}
 
 
-
 		/**
 		 * Detecting mousewheel scrolling
 		 *
@@ -621,11 +626,11 @@
 
 		$.fn.fullpage.moveSlideRight = function(){
 			moveSlide('next');
-		}
+		};
 
 		$.fn.fullpage.moveSlideLeft = function(){
 			moveSlide('prev');
-		}
+		};
 
 		function moveSlide(direction){
 		    var activeSection = $('.section.active');
@@ -723,7 +728,7 @@
 
 			if(options.autoScrolling){
 				scrollOptions['top'] = -dtop;
-				scrolledElement = container.selector;
+				scrolledElement = '.'+wrapperSelector;
 			}else{
 				scrollOptions['scrollTop'] = dtop;
 				scrolledElement = 'html, body';
@@ -814,7 +819,9 @@
 
 		//detecting any change on the URL to scroll to the given anchor link
 		//(a way to detect back history button as we play with the hashes on the URL)
-		$(window).on('hashchange',function(){
+		$(window).on('hashchange', hashChangeHandler);
+
+		function hashChangeHandler(){
 			if(!isScrolling){
 				var value =  window.location.hash.replace('#', '').split('/');
 				var section = value[0];
@@ -822,7 +829,7 @@
 
 				//when moving to a slide in the first section for the first time (first time to add an anchor to the URL)
 				var isFirstSlideMove =  (typeof lastScrolledDestiny === 'undefined');
-				var isFirstScrollMove = (typeof lastScrolledDestiny === 'undefined' && typeof slide === 'undefined');
+				var isFirstScrollMove = (typeof lastScrolledDestiny === 'undefined' && typeof slide === 'undefined' && !slideMoving);
 
 				/*in order to call scrollpage() only once for each destination at a time
 				It is called twice for each scroll otherwise, as in case of using anchorlinks `hashChange`
@@ -831,8 +838,7 @@
 					scrollPageAndSlide(section, slide);
 				}
 			}
-
-		});
+		}
 
 
 		/**
@@ -1018,7 +1024,7 @@
 		}
 
 
-		if (!isTablet) {
+		if (!isTouchDevice) {
 			var resizeId;
 
 			//when resizing the site, we adjust the heights of the sections
@@ -1026,7 +1032,7 @@
 				//in order to call the functions only when the resize is finished
 				//http://stackoverflow.com/questions/4298612/jquery-how-to-call-resize-event-only-once-its-finished-resizing
 				clearTimeout(resizeId);
-				resizeId = setTimeout(doneResizing, 500);
+				resizeId = setTimeout($.fn.fullpage.reBuild, 500);
 			});
 
 		}
@@ -1036,8 +1042,8 @@
 		orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
 
 		$(window).bind(orientationEvent , function() {
-			if(isTablet){
-				doneResizing();
+			if(isTouchDevice){
+				$.fn.fullpage.reBuild();
 			}
 		});
 
@@ -1045,7 +1051,7 @@
 		/**
 		 * When resizing is finished, we adjust the slides sizes and positions
 		 */
-		function doneResizing() {
+		$.fn.fullpage.reBuild = function(){
 			isResizing = true;
 
 			var windowsWidth = $(window).width();
@@ -1079,7 +1085,6 @@
 					}
 
 				}
-
 
 				//adjusting the position fo the FULL WIDTH slides...
 				var slides = $(this).find('.slides');
@@ -1250,13 +1255,17 @@
 
 			//removing the scrolling when it is not necessary anymore
 			else{
-				element.find('.scrollable').children().first().unwrap().unwrap();
-				element.find('.slimScrollBar').remove();
-				element.find('.slimScrollRail').remove();
+				removeSlimScroll(element);
 			}
 
 			//undo
 			element.css('overflow', '');
+		}
+
+		function removeSlimScroll(element){
+			element.find('.scrollable').children().first().unwrap().unwrap();
+			element.find('.slimScrollBar').remove();
+			element.find('.slimScrollRail').remove();
 		}
 
 		function addTableClass(element){
@@ -1468,9 +1477,12 @@
 		* Adds the possibility to auto scroll through sections on touch devices.
 		*/
 		function addTouchHandler(){
-			if(isTablet){
-				$(document).off('touchstart MSPointerDown').on('touchstart MSPointerDown', touchStartHandler);
-				$(document).off('touchmove MSPointerMove').on('touchmove MSPointerMove', touchMoveHandler);
+			if(isTouchDevice){
+				//Microsoft pointers
+				MSPointer = getMSPointer();
+
+				$(document).off('touchstart ' +  MSPointer.down).on('touchstart ' + MSPointer.down, touchStartHandler);
+				$(document).off('touchmove ' + MSPointer.move).on('touchmove ' + MSPointer.move, touchMoveHandler);
 			}
 		}
 
@@ -1478,12 +1490,35 @@
 		* Removes the auto scrolling for touch devices.
 		*/
 		function removeTouchHandler(){
-			if(isTablet){
-				$(document).off('touchstart MSPointerDown');
-				$(document).off('touchmove MSPointerMove');
+			if(isTouchDevice){
+				//Microsoft pointers
+				MSPointer = getMSPointer();
+
+				$(document).off('touchstart ' + MSPointer.down);
+				$(document).off('touchmove ' + MSPointer.move);
 			}
 		}
 
+
+		/*
+		* Returns and object with Microsoft pointers (for IE<11 and for IE >= 11)
+		* http://msdn.microsoft.com/en-us/library/ie/dn304886(v=vs.85).aspx
+		*/
+		function getMSPointer(){
+			var pointer;
+
+			//IE >= 11
+			if(window.PointerEvent){
+				pointer = { down: "pointerdown", move: "pointermove"};
+			}
+
+			//IE < 11
+			else{
+				pointer = { down: "MSPointerDown", move: "MSPointerMove"};
+			}
+
+			return pointer;
+		}
 		/**
 		* Gets the pageX and pageY properties depending on the browser.
 		* https://github.com/alvarotrigo/fullPage.js/issues/194#issuecomment-34069854
@@ -1520,5 +1555,85 @@
 			};
 		}
 
+
+		/*
+		* Destroys fullpage.js plugin events and optinally its html markup and styles
+		*/
+		$.fn.fullpage.destroy = function(all){
+			$.fn.fullpage.setAutoScrolling(false);
+ 			$.fn.fullpage.setAllowScrolling(false);
+ 			$.fn.fullpage.setKeyboardScrolling(false);
+
+
+ 			$(window)
+				.off('scroll', scrollHandler)
+  				.off('hashchange', hashChangeHandler);
+
+			$(document)
+				.off('click', '#fullPage-nav a')
+				.off('mouseenter', '#fullPage-nav li')
+				.off('mouseleave', '#fullPage-nav li')
+				.off('click', '.fullPage-slidesNav a')
+  				.off('mouseover', options.normalScrollElements)
+  				.off('mouseout', options.normalScrollElements);
+
+			$('.section')
+				.off('click', '.controlArrow')
+				.off('click', '.toSlide');
+
+			//lets make a mess!
+			if(all){
+				destroyStructure();
+			}
+ 		};
+
+ 		/*
+		* Removes inline styles added by fullpage.js
+		*/
+		function destroyStructure(){
+			//reseting the `top` or `translate` properties to 0
+	 		silentScroll(0);
+
+			$('#fullPage-nav, .fullPage-slidesNav, .controlArrow').remove();
+
+			//removing inline styles
+			$('.section').css( {
+				'height': '',
+				'background-color' : '',
+				'padding': ''
+			});
+
+			$('.slide').css( {
+				'width': ''
+			});
+
+			container.css({
+	 			'height': '',
+	 			'position': '',
+	 			'-ms-touch-action': ''
+	 		});
+
+			//removing added classes
+			$('.section, .slide').each(function(){
+				removeSlimScroll($(this));
+				$(this).removeClass('table active');
+			})
+
+			container.find('.easing').removeClass('easing');
+
+			//Unwrapping content
+			container.find('.tableCell, .slidesContainer, .slides').each(function(){
+				//unwrap not being use in case there's no child element inside and its just text
+				$(this).replaceWith(this.childNodes);
+			});
+
+			//scrolling the page to the top with no animation
+			$('html, body').scrollTop(0);
+
+			//to know if the plugin was already used in case it is used in a future again
+			container.addClass('fullpage-used');
+		}
+
 	};
+
 })(jQuery);

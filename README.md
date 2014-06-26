@@ -7,19 +7,19 @@ It allows the creation of fullscreen scrolling websites, as well as adding some 
 
 - [Live demo](http://alvarotrigo.com/fullPage/)
 - [Apple demo] (http://alvarotrigo.com/fullPage/examples/apple.html)
-- [Temporal Website](http://alvarotrigo.com/blog/fullpage-jquery-plugin-for-fullscreen-scrolling-websites/)
+- [Temporary Website](http://alvarotrigo.com/blog/fullpage-jquery-plugin-for-fullscreen-scrolling-websites/)
 
-Invite me to a coffe
+Invite me to a coffee
 [![Donate](https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=BEK5JQCQMED4J&lc=GB&item_name=fullPage%2ejs&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
 
-Customizations of the plugin available upon request for some reasonable price. <a href="http://alvarotrigo.com/#contact-page">Contact me.</a>
+Customizations of the plugin available upon request for some reasonable price. <a href="http://alvarotrigo.com/#contact-page">Contact me</a>.
 
 ## Introduction
 Suggestion are more than welcome, not only for feature requests but also for coding style improvements.
 Let's make this a great plugin to make people's lives easier!
 
 ## Compatibility
-fullPage.js is fully functional on all modern browsers, as well as some old ones such as Internet Explorer 8, 9, Opera 12...
+fullPage.js is fully functional on all modern browsers, as well as some old ones such as Internet Explorer 8, 9, Opera 12, etc.
 It works with browsers with CSS3 support and with the ones who don't have it, making it ideal for old browsers compatibility.
 
 ## Usage
@@ -29,7 +29,7 @@ As you can see in the example files, you will need to include the JavaScript fil
 ```html
 <link rel="stylesheet" type="text/css" href="jquery.fullPage.css" />
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
 <!-- This following line is needed in case of using the default easing option or when using another
  one rather than "linear" or "swing". You can also add the full jQuery UI instead of this file if you prefer -->
@@ -85,7 +85,7 @@ $(document).ready(function() {
 	$('#fullpage').fullpage({
 		verticalCentered: true,
 		resize : true,
-		slidesColor : ['#ccc', '#fff'],
+		sectionsColor : ['#ccc', '#fff'],
 		anchors:['firstSlide', 'secondSlide'],
 		scrollingSpeed: 700,
 		easing: 'easeInQuart',
@@ -103,7 +103,6 @@ $(document).ready(function() {
 		css3: false,
 		paddingTop: '3em',
 		paddingBottom: '10px',
-		fixedElements: '#element1, .element2',
 		normalScrollElements: '#element1, .element2',
 		normalScrollElementTouchThreshold: 5,
 		keyboardScrolling: true,
@@ -127,6 +126,7 @@ In order to create links to certain slides inside a section, you could do it in 
 
 #### Using anchor links
 If you are using fullPage.js with anchor links for the sections (using the `anchors` option), then you will be able to use anchor links also to navigate directly to a certain slide inside a section.
+For example: http://alvarotrigo.com/fullPage/#secondPage/2
 
 You can do it by using the index of the slide (starting by 0), or if you prefer, you can create custom anchor links for them by using the attribute `data-anchor` in each slide. For example:
 
@@ -159,20 +159,20 @@ To create links between sections, you could use the `menu` option and make use o
 
 - `resize`: (default `true`) Whether you want to resize the text when the window is resized.
 
-- `scrollingSpeed`: (default `700`) Speed in miliseconds for the scrolling transitions.
+- `scrollingSpeed`: (default `700`) Speed in milliseconds for the scrolling transitions.
 
-- `slidesColor`:(default `none`) Define the CSS `background-color` property for each section:
+- `sectionsColor`:(default `none`) Define the CSS `background-color` property for each section:
 Example:
 ```javascript
 $('#fullpage').fullpage({
-    slidesColor: ['#f2f2f2', '#4BBFC3', '#7BAABE', 'whitesmoke', '#000'],
+    sectionsColor: ['#f2f2f2', '#4BBFC3', '#7BAABE', 'whitesmoke', '#000'],
 });
 ```
 
 - `anchors`: (default `[]`) Defines the anchor links (#example) to be shown on the URL for each section. Using anchors forward and backward navigation will also be possible through the browser. This option also allows users to bookmark a specific section or slide. **Be careful!** if you use anchors, they can not have the same value as any ID element on the site (or NAME element for IE).
 
 - `easing`: (default `easeInQuart`) Defines the transition effect to use for the vertical and horizontal scrolling.
-It requieres the file `vendors/jquery.easings.min.js` or [jQuery UI](http://jqueryui.com/) for using some of its transitions. Other libraries could be used instead.
+It requires the file `vendors/jquery.easings.min.js` or [jQuery UI](http://jqueryui.com/) for using some of its transitions. Other libraries could be used instead.
 
 - `loopTop`: (default `false`) Defines whether scrolling up in the first section should scroll to the last one or not.
 
@@ -219,6 +219,8 @@ $('#fullpage').fullpage({
     menu: '#myMenu'
 });
 ```
+
+**Note:** the menu element should be placed outside the fullpage wrapper in order to avoid problem when ussing `css3:true`. Otherwise it will be appeneded to the `body` by the plugin itself.
 
 - `navigation`: (default `false`) If set to `true`, it will show a navigation bar made up of small circles.
 
@@ -280,7 +282,7 @@ Scrolls the horizontal slider of the current section to the previous slide:
 $.fn.fullpage.moveSlideLeft();
 ```
 
-### setAutoScrolling
+### setAutoScrolling(boolean)
 Sets the scrolling configuration in real time.
 Defines the way the page scrolling behaves. If it is set to `true`, it will use the "automatic" scrolling, otherwise, it will use the "manual" or "normal" scrolling of the site. Be careful when combining this option with `scrollOverflow` set to true, as it might be difficult to scroll using the mouse wheel or the trackpad when the section is scrollable.
 
@@ -288,14 +290,14 @@ Defines the way the page scrolling behaves. If it is set to `true`, it will use 
 $.fn.fullpage.setAutoScrolling(false);
 ```
 
-### setAllowScrolling
+### setAllowScrolling(boolean)
 Adds or remove the possiblity of scrolling through sections by using the mouse wheel/trackpad or touch gestures (which is active by default).
 
 ```javascript
 $.fn.fullpage.setAllowScrolling(false);
 ```
 
-### setKeyboardScrolling
+### setKeyboardScrolling(boolean)
 Adds or remove the possiblity of scrolling through sections by using the keyboard arrow keys (which is active by default).
 
 ```javascript
@@ -303,13 +305,34 @@ $.fn.fullpage.setKeyboardScrolling(false);
 ```
 
 
-### setScrollingSpeed
-Defines the scrolling speed in miliseconds.
+### setScrollingSpeed(milliseconds)
+Defines the scrolling speed in milliseconds.
 
 ```javascript
 $.fn.fullpage.setScrollingSpeed(700);
 ```
 
+### destroy(type)
+Destroys the plugin events and optinally its HTML markup and styles.
+Ideal to use when using AJAX to load content. ()
+
+- `type`: can be empty or `all`. If `all` is passed, the HTML markup and styles used by fullpage.js will be removed. This way the original HTML markup, the one used before any plugin modification is made, will be maintained.
+
+```javascript
+//destroy any plugin event (scrolls, hashchange in the URL...)
+$.fn.fullpage.destroy();
+
+//destroy any plugin event and any plugin modification done over your original HTML markup.
+$.fn.fullpage.destroy('all');
+```
+
+### reBuild()
+Updates the DOM structure to fit the new window size or its contents.
+Ideal to use in convination with AJAX calls or external changes in the DOM structure of the site.
+
+```javascript
+$.fn.fullpage.reBuild();
+```
 
 
 ## Callbacks
@@ -459,7 +482,7 @@ Example:
 ```
 
 ## Who is using fullPage.js
-If you want your page to be listed here. Please <a href="mailto:alvaro@alvarotrigo.com">contact me</a> with the URL
+If you want your page to be listed here. Please <a href="mailto:alvaro@alvarotrigo.com">contact me</a> with the URL.
 
 [![Sony](http://wallpapers-for-ipad.com/fullpage/imgs3/logos/sony.gif)](http://www.sony-asia.com/microsite/mdr-10/)
 [![Vodafone](http://wallpapers-for-ipad.com/fullpage/imgs3/logos/vodafone.png)](https://www.xone.vodafone.com)
@@ -493,11 +516,12 @@ If you want your page to be listed here. Please <a href="mailto:alvaro@alvarotri
 - http://bearonunicycle.com/
 - http://rawmilk.dk/en/
 - http://www.carpetloverclub.net/
+- http://www.implisit.com/
+- http://www.batzaya.net/
 - http://xepler.com/services
 - http://www.graphicid.dk/
 - http://hed.citinet.pro/
 - http://www.jukstapoz.com/
-- http://www.batzaya.net/
 - http://portfolio.io.utwente.nl/student/dijkavan/
 - http://www.omqcomics.com/
 - http://www.matrimonia.rs/
@@ -523,6 +547,9 @@ If you want your page to be listed here. Please <a href="mailto:alvaro@alvarotri
 - http://sunfishlabs.com/
 - http://wc2014.plnwrx.com/
 - http://organice.io/
+- http://www.cima-ecuador.com/
+- http://www.rienpipe.es
+- http://bootstrap.tunerus.ru/nastroyka_pianino/
 
 ## Donations
 Donations would be more than welcome :)
