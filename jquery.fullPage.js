@@ -42,6 +42,7 @@
 
 			//events
 			'afterLoad': null,
+			'beforeLeave':null,
 			'onLeave': null,
 			'afterRender': null,
 			'afterResize': null,
@@ -514,6 +515,15 @@
 		 */
 		function MouseWheelHandler(e) {
 			if(options.autoScrolling){
+				//before leave
+				var activeSection = $('.section.active');
+				var leavingSection = activeSection.index('.section') + 1
+				if($.isFunction( options.beforeLeave)){
+					if(!options.beforeLeave.call( this,leavingSection)){
+						return false;
+					}
+				}
+			
 				// cross-browser wheel delta
 				e = window.event || e;
 				var delta = Math.max(-1, Math.min(1,
